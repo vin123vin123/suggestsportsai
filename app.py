@@ -58,9 +58,7 @@ with col2:
                 }
                 
                 # 1. Trigger the Generation Request Payload
-                payload = {
-               # 1. Trigger the Generation Request Payload (Bypasses CSRF Checks Safely)
-# Instead of a strict version string, we target the model endpoint seamlessly
+                
 payload = {
     "input": {
         "prompt": full_prompt,
