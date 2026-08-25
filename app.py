@@ -79,7 +79,7 @@ with col2:
                     st.error("❌ Replicate rejected your token! Please go to ://replicate.com, copy your fresh key, and paste it again.")
                 elif init_res.status_code == 422:
                     st.error("❌ Prompt structural validation error. Please try removing custom modifiers text.")
-                elif init_res.status_code not in:
+                elif init_res.status_code not in[200,201]:
                     st.error(f"❌ Server Error ({init_res.status_code}): Ensure your Replicate account has enough generation credits.")
                 else:
                     prediction_data = init_res.json()
