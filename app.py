@@ -70,9 +70,8 @@ with col2:
                     }
                 }
                 
-                # CLEAN ROUTING GATEWAY: Uses a single, bulletproof standard prediction endpoint structure
-                url = "https://replicate.com"
-                payload["version"] = "03e288270e5b93b235b18169d2678839b66500117e2b46b7f620389e1a96c002"
+                model_slug = "cjwbw/sd_pixelart_spritesheet_generator"
+                url = f"https://replicate.com{model_slug}/predictions"
                 
                 init_res = requests.post(url, headers=headers, json=payload)
                 
@@ -92,7 +91,7 @@ with col2:
                     
                     while status in ["starting", "processing"]:
                         time.sleep(3) # Wait 3 seconds between polls
-                        status_res = requests.get(f"https://replicate.com/{prediction_id}", headers=headers)
+                        status_res = requests.get(f"https://replicate.com{prediction_id}", headers=headers)
                         status_data = status_res.json()
                         status = status_data.get("status", "failed")
                         
