@@ -23,7 +23,7 @@ else:
     st.sidebar.success("API Token applied successfully!")
 
 # Split Canvas Grid
-col1, col2 = st.columns()
+col1, col2 = st.columns(2)
 
 with col1:
     st.header("🎨 Sprite Configuration")
