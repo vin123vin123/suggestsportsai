@@ -22,7 +22,7 @@ if not api_token:
 else:
     st.sidebar.success("API Token applied successfully!")
 
-# Split Canvas Grid
+# Split Canvas Grid into 2 Columns
 col1, col2 = st.columns(2)
 
 with col1:
@@ -57,44 +57,42 @@ with col2:
                     "Content-Type": "application/json"
                 }
                 
-                # 1. Trigger the Generation Request Payload
+                # Setup payload configuration
+                payload = {
+                    "input": {
+                        "prompt": full_prompt,
+                        "negative_prompt": "blurry, smooth photo, photo realism, distorted borders, text, watermark, bad hands",
+                        "num_outputs": 1,
+                        "guidance_scale": guidance,
+                        "num_inference_steps": steps,
+                        "width": 512,
+                        "height": 512
+                    }
+                }
                 
-payload = {
-    "input": {
-        "prompt": full_prompt,
-        "negative_prompt": "blurry, smooth photo, photo realism, distorted borders, text, watermark, bad hands",
-        "num_outputs": 1,
-        "guidance_scale": guidance,
-        "num_inference_steps": steps,
-        "width": 512,
-        "height": 512
-    }
-}
-
-# The clean URL gateway that routes directly through Replicate's model slug pipeline
-model_slug = "cjwbw/sd_pixelart_spritesheet_generator"
-init_res = requests.post(
-    f"https://replicate.com{model_slug}/predictions", 
-    headers=headers, 
-    json=payload
-)
-
+                # The clean URL gateway that routes directly through Replicate's model slug pipeline to bypass CSRF
+                model_slug = "cjwbw/sd_pixelart_spritesheet_generator"
+                init_res = requests.post(
+                    f"https://replicate.com{model_slug}/predictions", 
+                    headers=headers, 
+                    json=payload
+                )
                 
                 if init_res.status_code == 401:
                     st.error("❌ Replicate rejected your token. Please double check that you copied the correct API Key from your Replicate dashboard settings tab!")
-                elif init_res.status_code != 201:
+                elif init_res.status_code not in:
                     st.error(f"❌ Server error ({init_res.status_code}): {init_res.text}")
                 else:
                     prediction_data = init_res.json()
                     prediction_id = prediction_data["id"]
                     
-                    # 2. Dynamic Status Polling Loop
+                    # Dynamic Status Polling Loop
                     status = "starting"
                     image_url = None
                     
                     while status in ["starting", "processing"]:
                         time.sleep(3) # Wait 3 seconds between polls
-                        status_res = requests.get(f"https://replicate.com/{prediction_id}", headers=headers)
+                        status_res = requests.get(f"https://replicate.com{prediction_id}", headers=headers)
                         status_data = status_res.json()
                         status = status_data.get("status", "failed")
                         
@@ -107,7 +105,7 @@ init_res = requests.post(
                             st.error("AI engine failed to draw this layout combination.")
                             break
                     
-                    # 3. Render Output Image directly on Canvas
+                    # Render Output Image directly on Canvas
                     if image_url:
                         st.success("🎉 Sprite Sheet Generated Successfully!")
                         img_response = requests.get(image_url)
