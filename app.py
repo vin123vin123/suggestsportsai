@@ -80,7 +80,7 @@ with col2:
                 
                 if init_res.status_code == 401:
                     st.error("❌ Replicate rejected your token. Please double check that you copied the correct API Key from your Replicate dashboard settings tab!")
-                elif init_res.status_code not in:
+                elif init_res.status_code not in[200,201]:
                     st.error(f"❌ Server error ({init_res.status_code}): {init_res.text}")
                 else:
                     prediction_data = init_res.json()
