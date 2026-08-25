@@ -59,19 +59,28 @@ with col2:
                 
                 # 1. Trigger the Generation Request Payload
                 payload = {
-                    "version": "03e288270e5b93b235b18169d2678839b66500117e2b46b7f620389e1a96c002",
-                    "input": {
-                        "prompt": full_prompt,
-                        "negative_prompt": "blurry, smooth photo, photo realism, distorted borders, text, watermark, bad hands",
-                        "num_outputs": 1,
-                        "guidance_scale": guidance,
-                        "num_inference_steps": steps,
-                        "width": 512,
-                        "height": 512
-                    }
-                }
-                
-                init_res = requests.post("https://replicate.com", headers=headers, json=payload)
+               # 1. Trigger the Generation Request Payload (Bypasses CSRF Checks Safely)
+# Instead of a strict version string, we target the model endpoint seamlessly
+payload = {
+    "input": {
+        "prompt": full_prompt,
+        "negative_prompt": "blurry, smooth photo, photo realism, distorted borders, text, watermark, bad hands",
+        "num_outputs": 1,
+        "guidance_scale": guidance,
+        "num_inference_steps": steps,
+        "width": 512,
+        "height": 512
+    }
+}
+
+# The clean URL gateway that routes directly through Replicate's model slug pipeline
+model_slug = "cjwbw/sd_pixelart_spritesheet_generator"
+init_res = requests.post(
+    f"https://replicate.com{model_slug}/predictions", 
+    headers=headers, 
+    json=payload
+)
+
                 
                 if init_res.status_code == 401:
                     st.error("❌ Replicate rejected your token. Please double check that you copied the correct API Key from your Replicate dashboard settings tab!")
