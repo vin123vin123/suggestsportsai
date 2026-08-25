@@ -18,7 +18,7 @@ api_token = st.sidebar.text_input("Replicate API Token", type="password", value=
 if not api_token:
     st.sidebar.warning("Please insert your Replicate API Token to start generating.")
 else:
-    os.environ["REPLICATE_API_TOKEN"] = api_token
+    os.environ["REPLICATE_API_TOKEN"] = api_token.strip()
     st.sidebar.success("API Token applied successfully!")
 
 # Split Canvas Grid
