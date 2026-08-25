@@ -20,7 +20,7 @@ api_token = raw_api_token.strip()
 if not api_token:
     st.sidebar.warning("Please insert your Replicate API Token to start generating.")
 else:
-    st.sidebar.success("API Token applied successfully!")
+    st.sidebar.success("API Token layout applied!")
 
 # Split Canvas Grid into 2 Columns
 col1, col2 = st.columns(2)
@@ -50,7 +50,7 @@ with col2:
         # Build clean prompt matching the cjwbw/sd_pixelart_spritesheet_generator blueprint requirements
         full_prompt = f"{trigger_token}, {sport.lower()} player character sprite sheet animation grid, {style.lower()}, white background, {custom_prompt}"
         
-        with st.spinner("⚡ Connecting directly via HTTP API... Baking your sprite grid frames..."):
+        with st.spinner("⚡ Connecting to Replicate AI... Cooking your sprite grid frames... (takes ~15 seconds)"):
             try:
                 headers = {
                     "Authorization": f"Token {api_token}",
@@ -70,18 +70,18 @@ with col2:
                     }
                 }
                 
-                # The clean URL gateway that routes directly through Replicate's model slug pipeline to bypass CSRF
-                model_slug = "cjwbw/sd_pixelart_spritesheet_generator"
-                init_res = requests.post(
-                    f"https://replicate.com{model_slug}/predictions", 
-                    headers=headers, 
-                    json=payload
-                )
+                # CLEAN ROUTING GATEWAY: Uses a single, bulletproof standard prediction endpoint structure
+                url = "https://replicate.com"
+                payload["version"] = "03e288270e5b93b235b18169d2678839b66500117e2b46b7f620389e1a96c002"
+                
+                init_res = requests.post(url, headers=headers, json=payload)
                 
                 if init_res.status_code == 401:
-                    st.error("❌ Replicate rejected your token. Please double check that you copied the correct API Key from your Replicate dashboard settings tab!")
-                elif init_res.status_code not in[200,201]:
-                    st.error(f"❌ Server error ({init_res.status_code}): {init_res.text}")
+                    st.error("❌ Replicate rejected your token! Please go to ://replicate.com, copy your fresh key, and paste it again.")
+                elif init_res.status_code == 422:
+                    st.error("❌ Prompt structural validation error. Please try removing custom modifiers text.")
+                elif init_res.status_code not in:
+                    st.error(f"❌ Server Error ({init_res.status_code}): Ensure your Replicate account has enough generation credits.")
                 else:
                     prediction_data = init_res.json()
                     prediction_id = prediction_data["id"]
@@ -92,17 +92,20 @@ with col2:
                     
                     while status in ["starting", "processing"]:
                         time.sleep(3) # Wait 3 seconds between polls
-                        status_res = requests.get(f"https://replicate.com{prediction_id}", headers=headers)
+                        status_res = requests.get(f"https://replicate.com/{prediction_id}", headers=headers)
                         status_data = status_res.json()
                         status = status_data.get("status", "failed")
                         
                         if status == "succeeded":
-                            # Pull output asset url
                             output = status_data.get("output")
-                            image_url = output[0] if isinstance(output, list) else output
+                            # Pull output asset url safely
+                            if isinstance(output, list) and len(output) > 0:
+                                image_url = output[0]
+                            else:
+                                image_url = output
                             break
                         elif status == "failed":
-                            st.error("AI engine failed to draw this layout combination.")
+                            st.error("❌ AI engine failed to draw this layout combination.")
                             break
                     
                     # Render Output Image directly on Canvas
